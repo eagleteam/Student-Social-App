@@ -1,28 +1,25 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+
 import 'package:connectivity/connectivity.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_student_social/login/login_page.dart';
-import 'package:flutter_student_social/menu/Time_out_class.dart';
 import 'package:flutter_student_social/main/index_click_day.dart';
 import 'package:flutter_student_social/menu/CreatQR.dart';
+import 'package:flutter_student_social/menu/Time_out_class.dart';
 import 'package:flutter_student_social/menu/diem_ngoai_khoa.dart';
 import 'package:flutter_student_social/menu/edit_note.dart';
 import 'package:flutter_student_social/menu/mark_check.dart';
+import 'package:flutter_student_social/object/entries.dart';
 import 'package:flutter_student_social/object/profile.dart';
 import 'package:flutter_student_social/object/schedule.dart';
 import 'package:flutter_student_social/object/subjects.dart';
-import 'package:flutter_student_social/support/color_loader.dart';
-import 'package:flutter_student_social/support/date.dart';
-import 'package:flutter_student_social/support/dot_type.dart';
+import 'package:flutter_student_social/support/storage_helper.dart';
 import 'package:flutter_student_social/widget/calendar.dart';
 import 'package:flutter_student_social/widget/dialog_add_ghichu.dart';
 import 'package:flutter_student_social/widget/fancy_fab.dart';
 import 'package:flutter_student_social/widget/list_schedule.dart';
-import 'package:flutter_student_social/object/entries.dart';
-import 'package:flutter_student_social/support/storage_helper.dart';
 import 'package:flutter_student_social/widget/update_lich.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -42,13 +39,11 @@ class MyHomePageState extends State<MyHomePage> {
   double _itemWidth = 0;
   double _tableHeight =
       316; // title = 20, titleday = 30, tableheight = 250 , 16 margin
-  int _indexFirstPage = 6;
   int indexDay = 0;
   int maxDayOfMonth = 0;
   int month = 0;
   int year = 0;
   int indexPage = 0;
-  DateSupport _dateSupport = DateSupport();
   final DateTime currentDate = DateTime.now();
   DateTime stateDate;
   Map<String, List<Entries>> entriesOfDay;
@@ -64,7 +59,6 @@ class MyHomePageState extends State<MyHomePage> {
   StorageHelper storageHelper;
   static bool init = false;
   bool coLichThiLai = false;
-  FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
 
   @override
   void initState() {
@@ -74,149 +68,12 @@ class MyHomePageState extends State<MyHomePage> {
     nameFuture = getNameFromProfile();
     classFuture = getClassFromProfile();
     msvFuture = getMSVFromProfile();
-    firstInitNotification();
-  }
-
-  firstInitNotification() async {
-    String init = await storageHelper.readFile(Path.initNotifi);
-    if (init != 'done') {
-      storageHelper.writeFile('done', Path.initNotifi).then((file) {
-        initNotification();
-      });
-    }
-  }
-
-  initNotification() async {
-    flutterLocalNotificationsPlugin = new FlutterLocalNotificationsPlugin();
-// initialise the plugin. app_icon needs to be a added as a drawable resource to the Android head project
-    var initializationSettingsAndroid =
-        new AndroidInitializationSettings('@mipmap/ic_logo');
-    var initializationSettingsIOS = new IOSInitializationSettings();
-    var initializationSettings = new InitializationSettings(
-        initializationSettingsAndroid, initializationSettingsIOS);
-    await flutterLocalNotificationsPlugin.initialize(initializationSettings,
-        onSelectNotification: onSelectNotification);
-    activeShowDaily();
-  }
-
-  activeShowDaily() async {
-    var time = new Time(19, 30, 0);
-    var androidPlatformChannelSpecifics = new AndroidNotificationDetails(
-      'repeatDailyAtTime channel id',
-      'repeatDailyAtTime channel name',
-      'repeatDailyAtTime description',
-      style: AndroidNotificationStyle.BigText,
-      autoCancel: false,
-      styleInformation: BigTextStyleInformation(
-        await getLichNgayMai(),
-      ),
-      icon: '@mipmap/ic_logo',
-      largeIcon: '@mipmap/ic_logo',
-    );
-    var iOSPlatformChannelSpecifics = new IOSNotificationDetails();
-    var platformChannelSpecifics = new NotificationDetails(
-        androidPlatformChannelSpecifics, iOSPlatformChannelSpecifics);
-    await flutterLocalNotificationsPlugin.showDailyAtTime(
-        0,
-        'Lịch cá nhân - Ngày ${DateTime.now().day}-${DateTime.now().month}-${DateTime.now().year}',
-        await getLichNgayMaiNormal(),
-        time,
-        platformChannelSpecifics);
-    //
-//    var scheduledNotificationDateTime =
-//        new DateTime.now().add(new Duration(seconds: 5));
-//    var androidPlatformChannelSpecifics = new AndroidNotificationDetails(
-//        'your other channel id',
-//        'your other channel name',
-//        'your other channel description',
-//        style: AndroidNotificationStyle.BigText,
-//        autoCancel: false,
-//        styleInformation: BigTextStyleInformation(await getLichNgayMai(),),
-//        icon: '@mipmap/ic_logo'
-//    );
-//    var iOSPlatformChannelSpecifics = new IOSNotificationDetails();
-//    NotificationDetails platformChannelSpecifics = new NotificationDetails(
-//        androidPlatformChannelSpecifics, iOSPlatformChannelSpecifics);
-//    await flutterLocalNotificationsPlugin.schedule(
-//        0,
-//        'Lịch cá nhân',
-//        await getLichNgayMaiNormal(),
-//        scheduledNotificationDateTime,
-//        platformChannelSpecifics);
-  }
-
-  Future<String> getLichNgayMaiNormal() async {
-    String lich = await getLichFromFile();
-    _initEntries(lich);
-    DateTime dateTime = DateTime.now().add(Duration(days: 1));
-    String key =
-        '${getNum(dateTime.year)}-${getNum(dateTime.month)}-${getNum(dateTime.day)}';
-//    String key = '2019-01-18';
-    print('key of notifi is $key');
-    if (this.entriesOfDay[key] == null || this.entriesOfDay[key].isEmpty) {
-      return 'Ngày mai bạn được nghỉ';
-    }
-    return 'Ngày mai bạn có ${this.entriesOfDay[key].length} lịch';
-  }
-
-  Future<String> getLichNgayMai() async {
-    String lich = await getLichFromFile();
-    _initEntries(lich);
-    DateTime dateTime = DateTime.now().add(Duration(days: 1));
-    String key =
-        '${getNum(dateTime.year)}-${getNum(dateTime.month)}-${getNum(dateTime.day)}';
-//    String key = '2019-01-18';
-    print('key of notifi is $key');
-    return getContentByListEntries(this.entriesOfDay[key]);
-  }
-
-  String getContentByListEntries(List<Entries> list) {
-    String msg = '';
-    for (int i = 0; i < list.length; i++) {
-      msg += getContentByEntri(list[i]);
-      if (i != list.length - 1) msg += '\n•\n';
-    }
-    return msg;
-  }
-
-  String getTenMon(String MaMon) {
-    for (int i = 0; i < listSubjects.length; i++) {
-      if (listSubjects[i].MaMon == MaMon) {
-        return listSubjects[i].TenMon;
-      }
-    }
-    return 'Không lấy được tên môn';
-  }
-
-  String getContentByEntri(Entries entri) {
-    if (entri.LoaiLich == 'LichHoc') {
-      return 'Môn học: ${getTenMon(entri.MaMon)}\nThời gian: ${entri.ThoiGian} ${DateSupport().getThoiGian(entri.ThoiGian)}\nĐịa điểm: ${entri.DiaDiem}\nGiảng viên: ${entri.GiaoVien}';
-    } else if (entri.LoaiLich == 'LichThi') {
-      return 'Môn thi: ${getTenMon(entri.MaMon)}\nSố báo danh: ${entri.SoBaoDanh}\nThời gian: ${entri.ThoiGian}\nĐịa điểm: ${entri.DiaDiem}\nHình thức: ${entri.HinhThuc}';
-    } else if (entri.LoaiLich == 'Note') {
-      return 'Tiêu đề: ${entri.MaMon}\nNội dung: ${entri.ThoiGian}';
-    }
-    return 'unknown';
-  }
-
-  String getNum(int n) {
-    if (n < 10) {
-      return '0$n';
-    }
-    return '$n';
-  }
-
-  Future onSelectNotification(String payload) async {
-    if (payload != null) {
-      debugPrint('notification payload: ' + payload);
-    }
   }
 
   _initSize() {
     this._size = MediaQuery.of(context).size;
     this._width = this._size.width;
     this._widthDrawer = this._width * 3 / 4;
-//    this._height = this._size.height;
     this._itemHeight = 250 / 6;
     this._itemWidth = this._width / 7;
   }
@@ -228,7 +85,6 @@ class MyHomePageState extends State<MyHomePage> {
         .replaceAll('\r', ', ')
         .replaceAll('\n', ', ')));
     List<Entries> entries = schedule.entries;
-//    if (this.listSubjects == null) this.listSubjects = schedule.subjects;
     if (this.listSubjects == null) {
       this.listSubjects = List<Subjects>();
     }
@@ -282,7 +138,6 @@ class MyHomePageState extends State<MyHomePage> {
   _initEntries(String value) {
     if (value.isEmpty)
       return; //neu gia tri ban dau rong thi se khong can initentries nua , return luon
-
     if (init == true) {
       print('da init data xong');
       return;
@@ -367,7 +222,9 @@ class MyHomePageState extends State<MyHomePage> {
         ),
       ],
     );
-    showDialog(context: context, child: dialog);
+    showDialog(context: context,builder: (context){
+      return dialog;
+    });
   }
 
   onPressedFab(String content) {
@@ -404,7 +261,7 @@ class MyHomePageState extends State<MyHomePage> {
   /*
    * xly click semester khi updatelich
    */
-  onClickSemester(String value) async{
+  onClickSemester(String value) async {
     if (value == 'loading') {
       _dialogLogin("Đang xử lý dữ liệu. Vui lòng đợi");
     } else if (value == 'update') {
@@ -427,9 +284,14 @@ class MyHomePageState extends State<MyHomePage> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(32)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(32)),
           contentPadding: EdgeInsets.all(6),
-          content: ListTile(title: Text('Cập nhật lịch thành công !'),leading: CircleAvatar(child: Icon(Icons.check),)),
+          content: ListTile(
+              title: Text('Cập nhật lịch thành công !'),
+              leading: CircleAvatar(
+                child: Icon(Icons.check),
+              )),
         ); //magic ^_^
       },
     );
