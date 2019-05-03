@@ -5,8 +5,6 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_student_social/object/diem_ngoai_khoa_obj.dart';
 import 'package:flutter_student_social/object/profile.dart';
-import 'package:flutter_student_social/support/color_loader.dart';
-import 'package:flutter_student_social/support/dot_type.dart';
 import 'package:flutter_student_social/support/storage_helper.dart';
 import 'package:http/http.dart' as http;
 

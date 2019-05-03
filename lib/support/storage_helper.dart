@@ -39,7 +39,6 @@ class StorageHelper {
   }
 
   Future<File> login() async{
-    LoginPage.alive = 'true';
     return writeFile('login', Path.logined);
   }
   Future<File> logOut() async{
@@ -54,6 +53,8 @@ class StorageHelper {
     delNote();
     return writeFile('', Path.logined);
   }
+
+
 
   delLichHoc() async{
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -97,6 +98,9 @@ class StorageHelper {
 
   Future<File> saveToken(String token) async{
     return writeFile(token, Path.token);
+  }
+  Future<String> loadToken() async{
+    return await readFile(Path.token);
   }
   Future<File> saveLichHoc(String lich) async{
     saveLichHocToF(lich);

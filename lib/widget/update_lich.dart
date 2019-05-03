@@ -1,9 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_student_social/support/color_loader.dart';
-import 'package:flutter_student_social/support/dot_type.dart';
-import 'package:flutter_student_social/support/url.dart';
+import 'package:flutter_student_social/support/link.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_student_social/support/storage_helper.dart';
 
@@ -32,7 +30,7 @@ class _UpdateLichState extends State<UpdateLich> {
   }
 
   void loadSemester() async {
-    var url = URL.getSemester;
+    var url = Link.getSemester;
     _token = await storageHelper.readFile(Path.token);
     http.post(url, headers: {"access-token": _token}).then((response) {
       print("Response body(load semester): ${response.body}");
@@ -113,7 +111,7 @@ class _UpdateLichState extends State<UpdateLich> {
       alert("LOI");
     } else {
       print("maky hoc $semester");
-      var url = URL.getLichHoc;
+      var url = Link.getLichHoc;
       http.post(url,
           headers: {"access-token": token},
           body: {"semester": semester}).then((response) {
@@ -131,7 +129,7 @@ class _UpdateLichState extends State<UpdateLich> {
       alert("LOI");
     } else {
       print("maky thi $semester");
-      var url = URL.getLichThi;
+      var url = Link.getLichThi;
       http.post(url,
           headers: {"access-token": token},
           body: {"semester": semester}).then((response) {
@@ -149,7 +147,7 @@ class _UpdateLichState extends State<UpdateLich> {
       alert("LOI");
     } else {
       print("maky thi lai$semester");
-      var url = URL.getLichThi;
+      var url = Link.getLichThi;
       http.post(url,
           headers: {"access-token": token},
           body: {"semester": semester}).then((response) {

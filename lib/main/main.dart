@@ -24,6 +24,7 @@ import 'package:flutter_student_social/widget/update_lich.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class MyHomePage extends StatefulWidget {
+  static const String tag = 'MyHomePage';
   @override
   State createState() => new MyHomePageState();
 }

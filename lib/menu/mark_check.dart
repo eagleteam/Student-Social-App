@@ -4,13 +4,11 @@ import 'package:connectivity/connectivity.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_student_social/object/mark.dart';
 import 'package:flutter_student_social/object/subjects.dart';
-import 'package:flutter_student_social/support/color_loader.dart';
-import 'package:flutter_student_social/support/dot_type.dart';
+import 'package:flutter_student_social/support/link.dart';
 import 'package:flutter_student_social/support/storage_helper.dart';
 import 'dart:convert';
 import 'package:flutter_student_social/widget/fancy_fab.dart';
 import 'package:http/http.dart' as http;
-import 'package:flutter_student_social/support/url.dart';
 
 class MarkCheck extends StatefulWidget {
   static const String tag = 'markcheck';
@@ -313,24 +311,8 @@ class _MarkCheckState extends State<MarkCheck> {
   /*
    * show dialog khi bao vao update diem
    */
-  AlertDialog _showLoadingKi() {
-    return AlertDialog(
-      title: Text('Đang cập nhật điểm'),
-      content: SingleChildScrollView(
-        child: ListBody(
-          children: <Widget>[
-            ColorLoader5(
-              dotOneColor: Colors.redAccent,
-              dotTwoColor: Colors.blueAccent,
-              dotThreeColor: Colors.green,
-              dotType: DotType.circle,
-              dotIcon: Icon(Icons.adjust),
-              duration: Duration(seconds: 1),
-            ),
-          ],
-        ),
-      ),
-    );
+  Widget _showLoadingKi() {
+    return Center(child: CircularProgressIndicator(),);
   }
 
   Future<void> showDialogUpdateDiem() async {
@@ -403,7 +385,7 @@ class _MarkCheckState extends State<MarkCheck> {
   }
 
   void getDiem() {
-    var url = URL.getDiem;
+    var url = Link.getDiem;
     http.post(url, headers: {"access-token": _token}).then((response) {
       if (response.statusCode == 200) {
         print("Response body(diem): ${response.body}");

@@ -1,6 +1,8 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_student_social/blocs/bloc_provider.dart';
+import 'package:flutter_student_social/blocs/login/login_bloc.dart';
 import 'package:flutter_student_social/login/login_page.dart';
 import 'package:flutter_student_social/menu/Time_out_class.dart';
 import 'package:flutter_student_social/main/main.dart';
@@ -21,7 +23,7 @@ class _MyAppState extends State<MyApp> {
   // This widget is the root of your application.
   final routes = <String, WidgetBuilder>{
     LoginPage.tag: (context) => LoginPage(),
-    "MyHomePage": (context) => MyHomePage(),
+    MyHomePage.tag: (context) => MyHomePage(),
     TimeOut.tag: (context) => TimeOut(),
     MarkCheck.tag: (context) => MarkCheck(),
     DiemNgoaiKhoa.tag: (context) => DiemNgoaiKhoa()
@@ -34,9 +36,12 @@ class _MyAppState extends State<MyApp> {
     return login;
   }
 
+  LoginBloc _loginBloc;
+
   @override
   void initState() {
     super.initState();
+    _loginBloc = LoginBloc();
     data = getDataFromFile();
   }
 
@@ -50,7 +55,10 @@ class _MyAppState extends State<MyApp> {
             // co du lieu
             return MyHomePage();
           } else {
-            return LoginPage();
+            return BlocProvider(
+              child: LoginPage(),
+              bloc: _loginBloc,
+            );
           }
         } else if (snapshot.hasError) {
           return Text("${snapshot.error}");

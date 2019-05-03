@@ -1,0 +1,1 @@
+enum Action{focusToPassword,showDialog,showLoading,pop,push,showDialogChonKy}
