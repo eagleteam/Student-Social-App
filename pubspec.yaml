@@ -26,7 +26,6 @@ dependencies:
   url_launcher: ^4.0.3
   shared_preferences: ^0.4.3
   connectivity: ^0.3.2
-  flutter_local_notifications: ^0.4.4+2
 
 dev_dependencies:
   flutter_test:
