@@ -259,6 +259,7 @@ class LoginBloc extends BlocBase {
       print(res.body);
     }
   }
+
   void _pushAfterGetDone(){
     if (lichthi && lichhoc && diem && profile && lichthilai) {
       _storageHelper.login().then((file) {
